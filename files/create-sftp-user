@@ -80,26 +80,29 @@ else
     usermod -p "*" "$user" # disabled password
 fi
 
-# Add SSH keys to authorized_keys with valid permissions
-if [ -d "/home/$user/.ssh/keys" ]; then
-    for publickey in "/home/$user/.ssh/keys"/*; do
+# Add SSH keys from secrets to authorized_keys with valid permissions
+if [ -d "/run/secrets/" ]; then
+    mkdir "/home/$user/.ssh"
+    for publickey in "/run/secrets/${user}_ssh_key_"*; do
         cat "$publickey" >> "/home/$user/.ssh/authorized_keys"
     done
     chown "$uid" "/home/$user/.ssh/authorized_keys"
     chmod 600 "/home/$user/.ssh/authorized_keys"
 fi
 
+# Directory support removed as only 'uploads' in mounted in S3
+# PRs welcome to add this back in.
 # Make sure dirs exists
-if [ -n "$dir" ]; then
-    IFS=',' read -ra dirArgs <<< "$dir"
-    for dirPath in "${dirArgs[@]}"; do
-        dirPath="/home/$user/$dirPath"
-        if [ ! -d "$dirPath" ]; then
-            log "Creating directory: $dirPath"
-            mkdir -p "$dirPath"
-            chown -R "$uid:users" "$dirPath"
-        else
-            log "Directory already exists: $dirPath"
-        fi
-    done
-fi
+#if [ -n "$dir" ]; then
+#    IFS=',' read -ra dirArgs <<< "$dir"
+#    for dirPath in "${dirArgs[@]}"; do
+#        dirPath="/home/$user/$dirPath"
+#        if [ ! -d "$dirPath" ]; then
+#            log "Creating directory: $dirPath"
+#            mkdir -p "$dirPath"
+#            chown -R "$uid:users" "$dirPath"
+#        else
+#            log "Directory already exists: $dirPath"
+#        fi
+#    done
+#fi
